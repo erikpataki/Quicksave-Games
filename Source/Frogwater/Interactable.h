@@ -36,4 +36,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category=Interaction)
 	void OnAim(AController* InInstigator);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category=Interaction)
+	bool InteractRequiresAiming();
 };

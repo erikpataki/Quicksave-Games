@@ -33,6 +33,7 @@ public:
 	virtual void OnOffhand_Implementation(AController* InInstigator) override;
 	virtual void OnHolstered_Implementation(AController* InInstigator) override;
 	virtual void OnAim_Implementation(AController* InInstigator) override;
+	virtual bool InteractRequiresAiming_Implementation() override;
 	
 	virtual const FString GetItemName_Implementation() const override { return "Camera"; }
 	virtual const UTexture2D* GetItemImage_Implementation() const override;

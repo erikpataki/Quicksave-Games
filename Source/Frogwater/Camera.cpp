@@ -91,6 +91,11 @@ void ACamera::OnAim_Implementation(AController* InInstigator)
 	StartTraceTimer();
 }
 
+bool ACamera::InteractRequiresAiming_Implementation()
+{
+	return true;
+}
+
 const UTexture2D* ACamera::GetItemImage_Implementation() const
 {
 	return nullptr;

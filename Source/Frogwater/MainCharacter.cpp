@@ -41,13 +41,13 @@ void AMainCharacter::BeginPlay()
 void AMainCharacter::OnPrimaryAction()
 {
 	Super::OnPrimaryAction();
-
-	if (GetHandItemState() == EItemState::Aimed)
+	
+	if (const auto CurrentHandItem = InventoryComponent->GetCurrentHandItem(); IsValid(CurrentHandItem))
 	{
-		if (const auto CurrentHandItem = InventoryComponent->GetCurrentHandItem(); IsValid(CurrentHandItem))
+		// Calls Interact on any object with the IInteractable interface (should be every item).
+		if (CurrentHandItem->Implements<UInteractable>())
 		{
-			// Calls Interact on any object with the IInteractable interface (should be every item).
-			if (CurrentHandItem->Implements<UInteractable>())
+			if (GetHandItemState() == EItemState::Aimed || !IInteractable::Execute_InteractRequiresAiming(CurrentHandItem))
 				bool bSuccess = IInteractable::Execute_Interact(CurrentHandItem, GetController());
 		}
 	}
