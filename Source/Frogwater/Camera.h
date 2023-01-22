@@ -6,6 +6,7 @@
 #include "Interactable.h"
 #include "Item.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SceneCaptureComponent2D.h"
 #include "GameFramework/Actor.h"
 #include "Camera.generated.h"
 
@@ -44,10 +45,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category="Camera", BlueprintReadOnly)
 	UStaticMeshComponent* StaticMeshComponent;
-
-	UPROPERTY(EditDefaultsOnly, Category="Camera", BlueprintReadOnly)
-	UCapsuleComponent* PickupCollision;
-
+	
 	UPROPERTY(EditAnywhere, Category="Camera", BlueprintReadOnly)
 	UHermesInteractableComponent* InteractableComponent;
 
@@ -88,6 +86,20 @@ protected:
 	float TraceTickInterval = 1 / 15.f;
 	FTimerHandle TraceTimer;
 
+	UPROPERTY(EditAnywhere, Category="Camera", AdvancedDisplay, meta=(ClampMin=0.5f, ClampMax=1.5f, FixedIncrement=0.125f))
+	float MinZoomPower = 1.f;
+
+	UPROPERTY(EditAnywhere, Category="Camera", AdvancedDisplay, meta=(ClampMin=40.f, ClampMax=120.f, FixedIncrement=1.f))
+	float NormalZoomFov = 60.f;
+
+	UPROPERTY(EditAnywhere, Category="Camera", AdvancedDisplay, meta=(ClampMin=1.f, ClampMax=16.f, FixedIncrement=0.125f))
+	float MaxZoomPower = 2.f;
+
+	UPROPERTY(EditAnywhere, Category="Camera", AdvancedDisplay, meta=(ClampMin=0.5f, ClampMax=100.f))
+	float ZoomSpeed = 10.f;
+
+	float TargetFov = NormalZoomFov;
+
 public:
 	UFUNCTION(BlueprintCallable, Category="Camera")
 	void TakePicture();
@@ -107,11 +119,20 @@ public:
 	UFUNCTION(BlueprintPure, Category="Camera")
 	USceneCaptureComponent2D* GetSceneCaptureComponent() const { return SceneCaptureComponent; }
 
-	UFUNCTION(BlueprintPure, Category="Camera")
-	UCapsuleComponent* GetPickupCollisionComponent() const { return PickupCollision; }
-
 	UFUNCTION(BlueprintCallable, Category="Camera")
 	void SaveLastCaptureAsFile(FString FileNameWithoutExtension);
+
+	UFUNCTION(BlueprintCallable, Category="Camera")
+	void SetZoomMagnification(float Power = 1.f, bool bForceChange = false);
+
+	UFUNCTION(BlueprintPure, Category="Camera")
+	float GetCurrentZoomMagnification() const { return FovToZoomMagnification(SceneCaptureComponent->FOVAngle); }
+
+	UFUNCTION(BlueprintPure, Category="Camera")
+	float FovToZoomMagnification(float Fov) const { return NormalZoomFov / Fov; }
+
+	UFUNCTION(BlueprintPure, Category="Camera")
+	float ZoomMagnificationToFov(float Power) const { return NormalZoomFov / Power; }
 
 protected:
 	void Trace();
@@ -143,6 +164,6 @@ protected:
 	UFUNCTION()
 	void OnTraceTick();
 
-	UFUNCTION()
-	void OnSceneCaptureTick();
+	UFUNCTION(BlueprintNativeEvent, Category="Camera")
+	void OnZoomPowerChanged(bool bZoomIn);
 };

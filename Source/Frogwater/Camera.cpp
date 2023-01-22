@@ -17,14 +17,11 @@ ACamera::ACamera()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.TickInterval = 1.f / 5.f;
+	PrimaryActorTick.TickInterval = 1.f / 60.f;
 	PrimaryActorTick.bStartWithTickEnabled = false;
 
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
 	StaticMeshComponent->SetupAttachment(GetRootComponent());
-
-	PickupCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("PickupCollision"));
-	PickupCollision->SetupAttachment(StaticMeshComponent);
 	
 	SceneCaptureComponent = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("SceneCapture"));
 	SceneCaptureComponent->SetupAttachment(StaticMeshComponent);
@@ -46,6 +43,12 @@ void ACamera::BeginPlay()
 void ACamera::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (!FMath::IsNearlyEqual(TargetFov, SceneCaptureComponent->FOVAngle, .2f))
+	{
+		SceneCaptureComponent->FOVAngle =
+			FMath::FInterpTo(SceneCaptureComponent->FOVAngle, TargetFov, DeltaTime, ZoomSpeed);
+	}
 }
 
 bool ACamera::Interact_Implementation(AController* InInstigator)
@@ -67,7 +70,7 @@ void ACamera::OnOffhand_Implementation(AController* InInstigator)
 	SetActorTickEnabled(true);
 	SetActorHiddenInGame(false);
 
-	SceneCaptureComponent->bCaptureOnMovement = true;
+	SceneCaptureComponent->bCaptureEveryFrame = true;
 	StopTraceTimer();
 }
 
@@ -77,7 +80,7 @@ void ACamera::OnHolstered_Implementation(AController* InInstigator)
 	SetActorTickEnabled(false);
 	SetActorHiddenInGame(true);
 
-	SceneCaptureComponent->bCaptureOnMovement = false;
+	SceneCaptureComponent->bCaptureEveryFrame = false;
 	StopTraceTimer();
 }
 
@@ -87,7 +90,7 @@ void ACamera::OnAim_Implementation(AController* InInstigator)
 	SetActorTickEnabled(true);
 	SetActorHiddenInGame(false);
 
-	SceneCaptureComponent->bCaptureOnMovement = true;
+	SceneCaptureComponent->bCaptureEveryFrame = true;
 	StartTraceTimer();
 }
 
@@ -295,6 +298,24 @@ void ACamera::SaveLastCaptureAsFile(FString FileNameWithoutExtension)
 		FileNameWithoutExtension + TEXT(".HDR"));
 }
 
+void ACamera::SetZoomMagnification(float Power, bool bForceChange)
+{
+	const float PrevFov = SceneCaptureComponent->FOVAngle;
+	
+	TargetFov = FMath::Clamp(
+		ZoomMagnificationToFov(Power),
+		ZoomMagnificationToFov(MaxZoomPower),
+		ZoomMagnificationToFov(MinZoomPower));
+
+	if (bForceChange)
+		SceneCaptureComponent->FOVAngle = TargetFov;
+
+	if (TargetFov > PrevFov)
+		OnZoomPowerChanged(false);
+	else if (TargetFov < PrevFov)
+		OnZoomPowerChanged(true);
+}
+
 void ACamera::StartTraceTimer()
 {
 	GetWorldTimerManager().SetTimer(TraceTimer, this, &ACamera::OnTraceTick, TraceTickInterval, true);
@@ -307,15 +328,12 @@ void ACamera::StopTraceTimer()
 
 void ACamera::OnTraceTick()
 {
-	UKismetSystemLibrary::PrintString(this, TEXT("Trace Tick"));
 	if (IsValid(GetOwningPawn()))
 		Trace();
 }
 
-void ACamera::OnSceneCaptureTick()
+void ACamera::OnZoomPowerChanged_Implementation(bool bZoomIn)
 {
-	UKismetSystemLibrary::PrintString(this, TEXT("Capture Tick"));
-	SceneCaptureComponent->CaptureScene();
 }
 
 void ACamera::OnPictureTaken_Implementation(bool bSuccess, UScannableComponent* ScannableComponent)

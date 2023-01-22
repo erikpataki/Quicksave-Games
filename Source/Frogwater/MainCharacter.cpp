@@ -3,6 +3,7 @@
 
 #include "MainCharacter.h"
 
+#include "Camera.h"
 #include "CharacterInventoryComponent.h"
 #include "HermesInteractorComponent.h"
 #include "Interactable.h"
@@ -58,6 +59,11 @@ void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (!FMath::IsNearlyEqual(TargetFov, FirstPersonCameraComponent->FieldOfView, .1f))
+	{
+		FirstPersonCameraComponent->SetFieldOfView(
+			FMath::FInterpTo(FirstPersonCameraComponent->FieldOfView, TargetFov, DeltaTime, FovChangeSpeed));
+	}
 }
 
 // Called to bind functionality to input
@@ -72,6 +78,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction("PreviousItem", IE_Pressed, this, &AMainCharacter::SwitchToPreviousItem_Internal);
 	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &AMainCharacter::Interact);
 	PlayerInputComponent->BindAction("Interact", IE_Released, this, &AMainCharacter::StopInteract);
+	PlayerInputComponent->BindAction("ZoomIn", IE_Pressed, this, &AMainCharacter::ZoomIn);
+	PlayerInputComponent->BindAction("ZoomOut", IE_Pressed, this, &AMainCharacter::ZoomOut);
 }
 
 AActor* AMainCharacter::SwitchToNextItem()
@@ -82,6 +90,14 @@ AActor* AMainCharacter::SwitchToNextItem()
 AActor* AMainCharacter::SwitchToPreviousItem()
 {
 	return InventoryComponent->PreviousHandItem();
+}
+
+void AMainCharacter::SetTargetFov(float NewFov, bool bForceChange)
+{
+	TargetFov = NewFov;
+
+	if (bForceChange)
+		FirstPersonCameraComponent->SetFieldOfView(NewFov);
 }
 
 void AMainCharacter::OnSecondaryAction()
@@ -162,6 +178,8 @@ void AMainCharacter::OnHandItemChanged(const UCharacterInventoryComponent* Sende
 void AMainCharacter::HandleHandStateChanged(const EItemState NewItemState, const AActor* Item,
 	const int32 ItemIndex)
 {
+	SetTargetFov(DefaultFov);
+	
 	// If new state is Offhand or Aimed, notify the item.
 	if (NewItemState == EItemState::Offhand)
 	{
@@ -186,4 +204,22 @@ void AMainCharacter::Interact()
 void AMainCharacter::StopInteract()
 {
 	InteractorComponent->CancelInteraction();
+}
+
+void AMainCharacter::ZoomIn_Implementation()
+{
+	if (GetHandItemState() != EItemState::Aimed)
+		return;
+	
+	if (auto Camera = Cast<ACamera>(GetInventory()->GetCurrentHandItem()); IsValid(Camera))
+		Camera->SetZoomMagnification(Camera->GetCurrentZoomMagnification() + ZoomStep);
+}
+
+void AMainCharacter::ZoomOut_Implementation()
+{
+	if (GetHandItemState() != EItemState::Aimed)
+		return;
+	
+	if (auto Camera = Cast<ACamera>(GetInventory()->GetCurrentHandItem()); IsValid(Camera))
+		Camera->SetZoomMagnification(Camera->GetCurrentZoomMagnification() - ZoomStep);
 }

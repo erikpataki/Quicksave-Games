@@ -65,6 +65,18 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category=Interaction)
 	EItemState HandState;
 
+	UPROPERTY(EditAnywhere, Category=Camera)
+	float ZoomStep = .25f;
+
+	UPROPERTY(EditAnywhere, Category=Camera)
+	float DefaultFov = 90.f;
+
+	UPROPERTY(EditAnywhere, Category=Camera)
+	float TargetFov = DefaultFov;
+
+	UPROPERTY(EditAnywhere, Category=Camera)
+	float FovChangeSpeed = 10.f;
+
 public:
 	UFUNCTION(BlueprintPure, Category=Interaction)
 	EItemState GetHandItemState() const { return HandState; }
@@ -89,6 +101,15 @@ public:
 
 	UFUNCTION(BlueprintPure, Category=Interaction)
 	UStaticMeshComponent* GetRightHand() const { return RightHandMesh; }
+
+	UFUNCTION(BlueprintCallable, Category=Camera)
+	void SetTargetFov(float NewFov, bool bForceChange = false);
+
+	UFUNCTION(BlueprintCallable, Category=Camera)
+	void ResetTargetFov(bool bForceChange = false) { SetTargetFov(GetDefaultFov(), bForceChange); }
+
+	UFUNCTION(BlueprintPure, Category=Camera)
+	float GetDefaultFov() const { return DefaultFov; }
 
 protected:
 	UFUNCTION()
@@ -120,4 +141,10 @@ protected:
 
 	UFUNCTION()
 	void StopInteract();
+
+	UFUNCTION(BlueprintNativeEvent, Category=Interaction)
+	void ZoomIn();
+
+	UFUNCTION(BlueprintNativeEvent, Category=Interaction)
+	void ZoomOut();
 };
