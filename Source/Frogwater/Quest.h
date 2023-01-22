@@ -31,4 +31,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Quest)
 	bool bHasPicture = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Quest)
+	class UQuestDataAsset* QuestToGiveUponCompletion = nullptr;
 };

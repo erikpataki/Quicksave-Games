@@ -45,6 +45,22 @@ bool UQuestSubsystem::IsQuestComplete(const UQuestDataAsset* QuestDataAsset)
 	return false;
 }
 
+bool UQuestSubsystem::IsQuestActiveById(FName QuestId)
+{
+	if (const auto Quest = GetQuestByPtr(QuestId))
+		return !Quest->bComplete;
+
+	return false;
+}
+
+bool UQuestSubsystem::IsQuestActive(const UQuestDataAsset* QuestDataAsset)
+{
+	if (IsValid(QuestDataAsset))
+		return IsQuestActiveById(QuestDataAsset->QuestId);
+
+	return false;
+}
+
 FQuest* UQuestSubsystem::GetQuestByPtr(FName QuestId)
 {
 	if (FQuest* Quest = MainQuests.Find(QuestId))
@@ -69,6 +85,7 @@ void UQuestSubsystem::AddQuest(const UQuestDataAsset* Quest)
 	QuestData.QuestType = Quest->QuestType;
 	QuestData.RequiredProgress = Quest->RequiredProgress;
 	QuestData.bHasPicture = Quest->bHasPicture;
+	QuestData.QuestToGiveUponCompletion = Quest->QuestToGiveUponCompletion;
 
 	switch (QuestData.QuestType)
 	{
@@ -173,17 +190,18 @@ void UQuestSubsystem::ProcessQuestCompleted(FQuest& Quest)
 	
 	Quest.bComplete = true;
 	OnQuestComplete.Broadcast(Quest);
+
+	if (IsValid(Quest.QuestToGiveUponCompletion))
+		AddQuest(Quest.QuestToGiveUponCompletion);
 }
 
 UTexture2D* UQuestSubsystem::GetPictureFromQuest(const UQuestDataAsset* QuestDataAsset)
 {
-	// Invalid Quest or Quest doesn't require a picture.
-	if (!IsValid(QuestDataAsset) || !QuestDataAsset->bHasPicture)
-		return nullptr;
+	const FString CompleteFileName = GetPictureFilenameForQuest(QuestDataAsset);
+	if (!CompleteFileName.IsEmpty())
+		return UKismetRenderingLibrary::ImportFileAsTexture2D(this, CompleteFileName);
 
-	const FString CompleteFileName = TEXT("K:/QS/Pictures/") + QuestDataAsset->QuestId.ToString() + TEXT(".HDR");
-
-	return UKismetRenderingLibrary::ImportFileAsTexture2D(this, CompleteFileName);
+	return nullptr;
 }
 
 FString UQuestSubsystem::GetPictureFilenameForQuest(const UQuestDataAsset* QuestDataAsset) const
@@ -192,7 +210,8 @@ FString UQuestSubsystem::GetPictureFilenameForQuest(const UQuestDataAsset* Quest
 	if (!IsValid(QuestDataAsset) || !QuestDataAsset->bHasPicture)
 		return FString();
 
-	const FString CompleteFileName = TEXT("K:/QS/Pictures/") + QuestDataAsset->QuestId.ToString() + TEXT(".HDR");
+	const FString CompleteFileName =
+		FPaths::Combine(FPaths::ProjectUserDir(), TEXT("Pictures"), QuestDataAsset->QuestId.ToString() + TEXT(".HDR"));
 	return CompleteFileName;
 }
 

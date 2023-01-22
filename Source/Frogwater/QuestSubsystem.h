@@ -51,6 +51,12 @@ public:
 	UFUNCTION(BlueprintPure, Category=Quest)
 	bool IsQuestComplete(const UQuestDataAsset* QuestDataAsset);
 
+	UFUNCTION(BlueprintPure, Category=Quest)
+	bool IsQuestActiveById(FName QuestId);
+
+	UFUNCTION(BlueprintPure, Category=Quest)
+	bool IsQuestActive(const UQuestDataAsset* QuestDataAsset);
+
 	FQuest* GetQuestByPtr(FName QuestId);
 
 	UFUNCTION(BlueprintCallable, Category=Quest)

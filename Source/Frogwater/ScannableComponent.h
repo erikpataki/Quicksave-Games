@@ -49,7 +49,7 @@ protected:
 	bool bCompleteQuestUponPictureTaken = false;
 
 	UPROPERTY(EditAnywhere, Category="Camera", meta=(EditCondition="bCompleteQuestUponPictureTaken"))
-	FName QuestName;
+	class UQuestDataAsset* Quest;
 
 	UPROPERTY(EditAnywhere, Category="Camera", meta=(EditCondition="bCompleteQuestUponPictureTaken"))
 	bool bSavePictureToQuest = false;
@@ -69,6 +69,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="Camera")
 	void Enable();
+
+	UFUNCTION(BlueprintCallable, Category="Camera")
+	void Disable();
 
 	UFUNCTION(BlueprintCallable, Category="Camera")
 	float GetTimeFocused() const { return TimeFocused; }

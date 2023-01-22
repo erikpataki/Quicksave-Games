@@ -25,4 +25,7 @@ public:
 
 	UPROPERTY(EditAnywhere, Category=Quest)
 	bool bHasPicture = false;
+	
+	UPROPERTY(EditAnywhere, Category=Quest)
+	class UQuestDataAsset* QuestToGiveUponCompletion;
 };

@@ -5,6 +5,7 @@
 
 #include "HermesInteractableComponent.h"
 #include "ImageUtils.h"
+#include "QuestSubsystem.h"
 #include "ScannableComponent.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/TextureRenderTarget2D.h"
@@ -294,7 +295,7 @@ void ACamera::SaveLastCaptureAsFile(FString FileNameWithoutExtension)
 	UKismetRenderingLibrary::ExportRenderTarget(
 		this,
 		SceneCaptureComponent->TextureTarget,
-		TEXT("K:/QS/Pictures"),
+		FPaths::ProjectUserDir() + TEXT("/Pictures"),
 		FileNameWithoutExtension + TEXT(".HDR"));
 }
 

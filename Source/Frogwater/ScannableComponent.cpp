@@ -3,6 +3,7 @@
 
 #include "ScannableComponent.h"
 
+#include "QuestDataAsset.h"
 #include "QuestSubsystem.h"
 
 // Sets default values for this component's properties
@@ -61,6 +62,11 @@ void UScannableComponent::Enable()
 	SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 }
 
+void UScannableComponent::Disable()
+{
+	SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
 bool UScannableComponent::ExecPictureTaken(ACamera* Camera)
 {
 	// Picture already taken. This shouldn't happen if collision profiles are working correctly.
@@ -72,8 +78,11 @@ bool UScannableComponent::ExecPictureTaken(ACamera* Camera)
 
 	if (IsValid(Camera) && bCompleteQuestUponPictureTaken && bSavePictureToQuest)
 	{
-		Camera->SaveLastCaptureAsFile(QuestName.ToString());
-		GetWorld()->GetSubsystem<UQuestSubsystem>()->CompleteQuestById(QuestName);
+		if (ensureAlwaysMsgf(IsValid(Quest), TEXT("Scannable wants a Quest but not Quest specified")))
+		{
+			Camera->SaveLastCaptureAsFile(Quest->QuestId.ToString());
+			GetWorld()->GetSubsystem<UQuestSubsystem>()->CompleteQuestById(Quest->QuestId);
+		}
 	}
 
 	OnPictureTaken.Broadcast(this, Camera);
