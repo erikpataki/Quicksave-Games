@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Engine/TriggerVolume.h"
-#include "LocationVolume.generated.h"
+#include "FLocationVolume.generated.h"
 
 /**
  * 
  */
 UCLASS(Blueprintable, BlueprintType)
-class FROGWATER_API ALocationVolume : public ATriggerVolume
+class FROGWATER_API AFLocationVolume : public ATriggerVolume
 {
 	GENERATED_BODY()
 

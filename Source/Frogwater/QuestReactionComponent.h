@@ -45,6 +45,7 @@ protected:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FQuestRequirementsSignature,
 		const UQuestReactionComponent*, Sender);
 
+public:
 	UPROPERTY(BlueprintAssignable, Category=Quest)
 	FQuestRequirementsSignature OnRequirementsMet;
 

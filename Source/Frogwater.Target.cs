@@ -10,5 +10,6 @@ public class FrogwaterTarget : TargetRules
 		Type = TargetType.Game;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
 		ExtraModuleNames.Add("Frogwater");
+		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_1;
 	}
 }

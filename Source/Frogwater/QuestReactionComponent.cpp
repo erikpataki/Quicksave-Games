@@ -36,12 +36,23 @@ void UQuestReactionComponent::BeginPlay()
 		RequiredQuestId = RequiredQuest->QuestId;
 	}
 
-	if (RequiredProgress <= 0)
-		Quests->OnQuestComplete.AddUniqueDynamic(this, &UQuestReactionComponent::OnQuestCompletion);
-	else
-		Quests->OnQuestUpdated.AddUniqueDynamic(this, &UQuestReactionComponent::OnQuestUpdated);
+	// No point subscribing if not a valid quest.
+	if (!RequiredQuestId.IsNone())
+	{
+		if (RequiredProgress <= 0)
+			Quests->OnQuestComplete.AddUniqueDynamic(this, &UQuestReactionComponent::OnQuestCompletion);
+		else
+			Quests->OnQuestUpdated.AddUniqueDynamic(this, &UQuestReactionComponent::OnQuestUpdated);
+	}
 
 	OnRequirementsMet.AddUniqueDynamic(this, &UQuestReactionComponent::RequirementsMet);
+
+	// If no valid quest given, instantly invoke requirements met.
+	if (RequiredQuestId.IsNone())
+	{
+		bRequirementsMet = true;
+		OnRequirementsMet.Broadcast(this);
+	}
 }
 
 
@@ -59,6 +70,7 @@ void UQuestReactionComponent::OnQuestCompletion(const FQuest& Quest)
 	{
 		bRequirementsMet = true;
 		OnRequirementsMet.Broadcast(this);
+		DestroyComponent();
 	}
 }
 
@@ -69,6 +81,7 @@ void UQuestReactionComponent::OnQuestUpdated(const FQuest& Quest, const float Pr
 	{
 		bRequirementsMet = true;
 		OnRequirementsMet.Broadcast(this);
+		DestroyComponent();
 	}
 }
 
