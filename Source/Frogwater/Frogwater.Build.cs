@@ -20,7 +20,8 @@ public class Frogwater : ModuleRules
 			"Slate",
 			"UMG",
 			"SlateCore",
-			"Water"
+			"Water",
+			"Landscape"
 		});
 	}
 }

@@ -5,6 +5,7 @@
 #include "FrogwaterGameState.h"
 #include "FrogwaterHUD.h"
 #include "FrogwaterPlayerController.h"
+#include "Landscape.h"
 #include "MainCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 
@@ -17,4 +18,9 @@ AFrogwaterGameMode::AFrogwaterGameMode()
 	HUDClass = AFrogwaterHUD::StaticClass();
 	GameStateClass = AFrogwaterGameState::StaticClass();
 
+}
+
+void AFrogwaterGameMode::BeginPlay()
+{
+	Super::BeginPlay();
 }

@@ -13,6 +13,9 @@ class AFrogwaterGameMode : public AGameModeBase
 
 public:
 	AFrogwaterGameMode();
+	
+protected:
+	virtual void BeginPlay() override;
 };
 
 
