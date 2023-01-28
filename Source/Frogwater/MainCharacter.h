@@ -79,6 +79,8 @@ protected:
 	UPROPERTY(EditAnywhere, Category=Camera)
 	float FovChangeSpeed = 10.f;
 
+	FVector HandRootOffset = FVector();
+
 public:
 	UFUNCTION(BlueprintPure, Category=Interaction)
 	EItemState GetHandItemState() const { return HandState; }
@@ -112,6 +114,16 @@ public:
 
 	UFUNCTION(BlueprintPure, Category=Camera)
 	float GetDefaultFov() const { return DefaultFov; }
+
+	/**
+	 * @brief Use this to move the Hand Root Relative Location, i.e. for items.
+	 * Changing via HandRoot->SetRelativeLocation will break due to Weapon Sway.
+	 */
+	UFUNCTION(BlueprintCallable, Category=Camera)
+	void SetHandRootOffset(FVector NewOffset);
+	
+	UFUNCTION(BlueprintPure, Category=Camera)
+	const FVector& GetHandRootOffset() const { return HandRootOffset; }
 
 protected:
 	UFUNCTION()
@@ -153,16 +165,26 @@ protected:
 	
 // Hand sway
 protected:
-	UPROPERTY(EditAnywhere, Category="Hand Sway")
+	// How much to reduce Hand Sway by when the player is aiming.
+	UPROPERTY(EditAnywhere, Category="Hand Sway", meta=(ClampMin=0.f, ClampMax=1.f, FixedIncrement=.01f))
 	float HandSwayAimReduction = .25f;
-	
+
+	// The maximum rotation of the Hands (from -180 to 180).
 	UPROPERTY(EditAnywhere, Category="Hand Sway")
 	FRotator MaxHandSway = FRotator(7.5, 7.5, 5);
 
+	// The minimum rotation of the Hands (from -180 to 180).
 	UPROPERTY(EditAnywhere, Category="Hand Sway")
 	FRotator MinHandSway = FRotator(-7.5, -7.5, -5);
-
-	UPROPERTY(EditAnywhere, Category="Hand Sway")
+	
+	/**
+	* @brief  The interpolation speed for Hand Sway.
+	* 
+	 * Too low = take long time for the camera to reset and not much movement.
+	 * 
+	 * Too high = camera instantly resets.
+	 */
+	UPROPERTY(EditAnywhere, Category="Hand Sway", meta=(ClampMin=1.f, ClampMax=10.f, FixedIncrement=.01f))
 	float HandSwaySpeed = 5.f;
 
 	UPROPERTY(EditAnywhere, Category="Hand Sway")
@@ -170,29 +192,33 @@ protected:
 	
 	// Should Hands sway naturally.
 	UPROPERTY(EditAnywhere, Category="Hand Sway|Breathing")
-	bool bEnableBreathingHandSway = false;
+	bool bEnableBreathingHandSway = true;
 	
 	UPROPERTY(EditAnywhere, Category="Hand Sway|Breathing")
-	float BreathingHandSwayMultiplier;
+	float BreathingHandSwayMultiplier = .15f;
 
 	// Should Character rotation changes cause Hand Sway?
 	UPROPERTY(EditAnywhere, Category="Hand Sway|Rotation")
 	bool bEnableRotationHandSway = true;
 
+	// How much of an impact should Character rotation have for Hand Sway?
 	UPROPERTY(EditAnywhere, Category="Hand Sway|Rotation")
 	float RotationHandSwayMultiplier = .5f;
 
-	// Should Character location changes cause Hand Sway?
+	// Should Character location changes (velocity) cause Hand Sway?
 	UPROPERTY(EditAnywhere, Category="Hand Sway|Location")
 	bool bEnableLocationHandSway = true;
 
+	// How much of an impact should Character velocity have for Hand Sway?
 	UPROPERTY(EditAnywhere, Category="Hand Sway|Location")
-	float LocationHandSwayMultiplier = .0067f;
+	float LocationHandSwayMultiplier = .0075f;
+
+	double TotalTime = 0;
 
 protected:
-	void UpdateHandSway(float DeltaTime);
-	void ApplyBreathingHandSway(FRotator& TargetRotation);
-	void ApplyRotationHandSway(FRotator& TargetRotation);
-	void ApplyLocationHandSway(FRotator& TargetRotation);
-	void ApplyHandSwayRotation(FRotator& TargetRotation, float Pitch, float Yaw);
+	void UpdateHandSway(float DeltaTime) const;
+	void ApplyBreathingHandSway(FVector& TargetLocation) const;
+	void ApplyRotationHandSway(FRotator& TargetRotation) const;
+	void ApplyLocationHandSway(FRotator& TargetRotation) const;
+	void ApplyHandSwayRotation(FRotator& TargetRotation, float Pitch, float Yaw) const;
 };
