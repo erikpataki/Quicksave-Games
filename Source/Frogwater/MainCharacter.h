@@ -38,6 +38,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void OnPrimaryAction() override;
+	virtual void Turn(float Rate) override;
+	virtual void LookUp(float Rate) override;
 
 public:	
 	// Called every frame
@@ -147,4 +149,50 @@ protected:
 
 	UFUNCTION(BlueprintNativeEvent, Category=Interaction)
 	void ZoomOut();
+
+	
+// Hand sway
+protected:
+	UPROPERTY(EditAnywhere, Category="Hand Sway")
+	float HandSwayAimReduction = .25f;
+	
+	UPROPERTY(EditAnywhere, Category="Hand Sway")
+	FRotator MaxHandSway = FRotator(7.5, 7.5, 5);
+
+	UPROPERTY(EditAnywhere, Category="Hand Sway")
+	FRotator MinHandSway = FRotator(-7.5, -7.5, -5);
+
+	UPROPERTY(EditAnywhere, Category="Hand Sway")
+	float HandSwaySpeed = 5.f;
+
+	UPROPERTY(EditAnywhere, Category="Hand Sway")
+	FRotator HandSwayMultiplier = FRotator(1.f, 1.f, .5f);
+	
+	// Should Hands sway naturally.
+	UPROPERTY(EditAnywhere, Category="Hand Sway|Breathing")
+	bool bEnableBreathingHandSway = false;
+	
+	UPROPERTY(EditAnywhere, Category="Hand Sway|Breathing")
+	float BreathingHandSwayMultiplier;
+
+	// Should Character rotation changes cause Hand Sway?
+	UPROPERTY(EditAnywhere, Category="Hand Sway|Rotation")
+	bool bEnableRotationHandSway = true;
+
+	UPROPERTY(EditAnywhere, Category="Hand Sway|Rotation")
+	float RotationHandSwayMultiplier = .5f;
+
+	// Should Character location changes cause Hand Sway?
+	UPROPERTY(EditAnywhere, Category="Hand Sway|Location")
+	bool bEnableLocationHandSway = true;
+
+	UPROPERTY(EditAnywhere, Category="Hand Sway|Location")
+	float LocationHandSwayMultiplier = .0067f;
+
+protected:
+	void UpdateHandSway(float DeltaTime);
+	void ApplyBreathingHandSway(FRotator& TargetRotation);
+	void ApplyRotationHandSway(FRotator& TargetRotation);
+	void ApplyLocationHandSway(FRotator& TargetRotation);
+	void ApplyHandSwayRotation(FRotator& TargetRotation, float Pitch, float Yaw);
 };

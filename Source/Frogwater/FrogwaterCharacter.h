@@ -35,6 +35,11 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UBFFootstepsComponent* FootstepsComponent;
 
+	float CurrentTurn;
+	float CurrentLookUp;
+	float CurrentTurnController;
+	float CurrentLookUpController;	
+
 public:
 	AFrogwaterCharacter();
 
@@ -51,6 +56,7 @@ public:
 	FOnUseItem OnUseItem;
 	
 protected:
+	virtual void Tick(float DeltaSeconds) override;
 	
 	/** Fires a projectile. */
 	virtual void OnPrimaryAction();
@@ -60,6 +66,10 @@ protected:
 
 	/** Handles strafing movement, left and right */
 	void MoveRight(float Val);
+
+	virtual void Turn(float Rate);
+
+	virtual void LookUp(float Rate);
 
 	/**
 	 * Called via input to turn at a given rate.
@@ -91,5 +101,10 @@ public:
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
+	UFUNCTION(BlueprintPure, Category=Character)
+	float GetTurn() const { return CurrentTurn + CurrentTurnController; }
+
+	UFUNCTION(BlueprintPure, Category=Character)
+	float GetLookUp() const { return CurrentLookUp + CurrentLookUpController; }
 };
 

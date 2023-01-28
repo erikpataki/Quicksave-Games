@@ -8,6 +8,7 @@
 #include "HermesInteractorComponent.h"
 #include "Interactable.h"
 #include "Camera/CameraComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 // Sets default values
@@ -54,6 +55,16 @@ void AMainCharacter::OnPrimaryAction()
 	}
 }
 
+void AMainCharacter::Turn(float Rate)
+{
+	Super::Turn(Rate);
+}
+
+void AMainCharacter::LookUp(float Rate)
+{
+	Super::LookUp(Rate);
+}
+
 // Called every frame
 void AMainCharacter::Tick(float DeltaTime)
 {
@@ -64,6 +75,8 @@ void AMainCharacter::Tick(float DeltaTime)
 		FirstPersonCameraComponent->SetFieldOfView(
 			FMath::FInterpTo(FirstPersonCameraComponent->FieldOfView, TargetFov, DeltaTime, FovChangeSpeed));
 	}
+
+	UpdateHandSway(DeltaTime);
 }
 
 // Called to bind functionality to input
@@ -222,4 +235,70 @@ void AMainCharacter::ZoomOut_Implementation()
 	
 	if (auto Camera = Cast<ACamera>(GetInventory()->GetCurrentHandItem()); IsValid(Camera))
 		Camera->SetZoomMagnification(Camera->GetCurrentZoomMagnification() - ZoomStep);
+}
+
+void AMainCharacter::UpdateHandSway(float DeltaTime)
+{
+	FRotator TargetRotation;
+	
+	if (bEnableBreathingHandSway)
+		ApplyBreathingHandSway(IN OUT TargetRotation);
+	if (bEnableRotationHandSway)
+		ApplyRotationHandSway(IN OUT TargetRotation);
+	if (bEnableLocationHandSway)
+		ApplyLocationHandSway(IN OUT TargetRotation);
+
+	if (GetHandItemState() == EItemState::Aimed)
+		TargetRotation *= HandSwayAimReduction;
+
+	const auto NewRotation = UKismetMathLibrary::RInterpTo(
+		GetHandRoot()->GetRelativeRotation(),
+		TargetRotation,
+		DeltaTime,
+		HandSwaySpeed);
+	
+	GetHandRoot()->SetRelativeRotation(NewRotation);
+}
+
+void AMainCharacter::ApplyBreathingHandSway(FRotator& TargetRotation)
+{
+	
+}
+
+void AMainCharacter::ApplyRotationHandSway(FRotator& TargetRotation)
+{
+	const float Yaw = GetTurn() * RotationHandSwayMultiplier;
+	const float Pitch = -(GetLookUp() * RotationHandSwayMultiplier);
+	ApplyHandSwayRotation(IN OUT TargetRotation, Pitch, Yaw);
+}
+
+void AMainCharacter::ApplyLocationHandSway(FRotator& TargetRotation)
+{
+	const auto RightVelocity = GetActorRightVector() * GetVelocity();
+	const auto UpVelocity = GetActorUpVector() * GetVelocity();
+	const float TotalRightVelocity = RightVelocity.X + RightVelocity.Y + RightVelocity.Z;
+	const float TotalUpVelocity = UpVelocity.X + UpVelocity.Y + UpVelocity.Z;
+	
+	ApplyHandSwayRotation(
+		IN OUT TargetRotation,
+		TotalUpVelocity * LocationHandSwayMultiplier,
+		TotalRightVelocity * LocationHandSwayMultiplier * .33f); 
+}
+
+void AMainCharacter::ApplyHandSwayRotation(FRotator& TargetRotation, float Pitch, float Yaw)
+{
+	TargetRotation.Pitch = FMath::Clamp(
+		TargetRotation.Pitch + Pitch * HandSwayMultiplier.Pitch,
+		MinHandSway.Pitch,
+		MaxHandSway.Pitch);
+	
+	TargetRotation.Yaw = FMath::Clamp(
+		TargetRotation.Yaw + Yaw * HandSwayMultiplier.Yaw,
+		MinHandSway.Yaw,
+		MaxHandSway.Yaw);
+	
+	TargetRotation.Roll = FMath::Clamp(
+		TargetRotation.Roll + Yaw * HandSwayMultiplier.Roll,
+		MinHandSway.Roll,
+		MaxHandSway.Roll);
 }
