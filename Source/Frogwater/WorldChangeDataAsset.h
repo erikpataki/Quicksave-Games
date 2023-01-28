@@ -10,7 +10,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType, Blueprintable)
 class FROGWATER_API UWorldChangeDataAsset : public UDataAsset
 {
 	GENERATED_BODY()
