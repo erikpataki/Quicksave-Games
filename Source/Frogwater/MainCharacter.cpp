@@ -70,6 +70,8 @@ void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	TotalTime += DeltaTime;
+
 	if (!FMath::IsNearlyEqual(TargetFov, FirstPersonCameraComponent->FieldOfView, .1f))
 	{
 		FirstPersonCameraComponent->SetFieldOfView(
@@ -111,6 +113,11 @@ void AMainCharacter::SetTargetFov(float NewFov, bool bForceChange)
 
 	if (bForceChange)
 		FirstPersonCameraComponent->SetFieldOfView(NewFov);
+}
+
+void AMainCharacter::SetHandRootOffset(FVector NewOffset)
+{
+	HandRootOffset = NewOffset;
 }
 
 void AMainCharacter::OnSecondaryAction()
@@ -237,12 +244,29 @@ void AMainCharacter::ZoomOut_Implementation()
 		Camera->SetZoomMagnification(Camera->GetCurrentZoomMagnification() - ZoomStep);
 }
 
-void AMainCharacter::UpdateHandSway(float DeltaTime)
+void AMainCharacter::UpdateHandSway(float DeltaTime) const
 {
-	FRotator TargetRotation;
-	
+	FVector TargetLocation;
 	if (bEnableBreathingHandSway)
-		ApplyBreathingHandSway(IN OUT TargetRotation);
+	{
+		ApplyBreathingHandSway(IN OUT TargetLocation);
+
+		if (GetHandItemState() == EItemState::Aimed)
+			TargetLocation *= HandSwayAimReduction;
+
+		TargetLocation += HandRootOffset;
+		
+		const auto NewLocation = FMath::VInterpTo(
+			GetHandRoot()->GetRelativeLocation(),
+			TargetLocation,
+			DeltaTime,
+			HandSwaySpeed * 2.f);
+	
+		GetHandRoot()->SetRelativeLocation(NewLocation);
+	}
+	
+	FRotator TargetRotation;
+
 	if (bEnableRotationHandSway)
 		ApplyRotationHandSway(IN OUT TargetRotation);
 	if (bEnableLocationHandSway)
@@ -251,7 +275,7 @@ void AMainCharacter::UpdateHandSway(float DeltaTime)
 	if (GetHandItemState() == EItemState::Aimed)
 		TargetRotation *= HandSwayAimReduction;
 
-	const auto NewRotation = UKismetMathLibrary::RInterpTo(
+	const auto NewRotation = FMath::RInterpTo(
 		GetHandRoot()->GetRelativeRotation(),
 		TargetRotation,
 		DeltaTime,
@@ -260,19 +284,32 @@ void AMainCharacter::UpdateHandSway(float DeltaTime)
 	GetHandRoot()->SetRelativeRotation(NewRotation);
 }
 
-void AMainCharacter::ApplyBreathingHandSway(FRotator& TargetRotation)
+void AMainCharacter::ApplyBreathingHandSway(FVector& TargetLocation) const
 {
+	// Lissajous Curve with an hourglass-like shape.	
+	/*TargetLocation.Y += FMath::Sin(
+		(2. * TotalTime) + UE_DOUBLE_PI) * BreathingHandSwayMultiplier;
+
+	TargetLocation.Z += 2. * FMath::Sin(
+	TotalTime) * BreathingHandSwayMultiplier;*/
+
+	// Lissajous Curve with an hourglass-like shape but a little bit messy.
+	TargetLocation.Y += 1.f * FMath::Sin(
+		2.f * TotalTime * .5f) * BreathingHandSwayMultiplier;
 	
+	TargetLocation.Z += 1.f * FMath::Sin(
+		3.f * TotalTime * .5f + UE_PI / 2.f) * BreathingHandSwayMultiplier;
+
 }
 
-void AMainCharacter::ApplyRotationHandSway(FRotator& TargetRotation)
+void AMainCharacter::ApplyRotationHandSway(FRotator& TargetRotation) const
 {
 	const float Yaw = GetTurn() * RotationHandSwayMultiplier;
 	const float Pitch = -(GetLookUp() * RotationHandSwayMultiplier);
 	ApplyHandSwayRotation(IN OUT TargetRotation, Pitch, Yaw);
 }
 
-void AMainCharacter::ApplyLocationHandSway(FRotator& TargetRotation)
+void AMainCharacter::ApplyLocationHandSway(FRotator& TargetRotation) const
 {
 	const auto RightVelocity = GetActorRightVector() * GetVelocity();
 	const auto UpVelocity = GetActorUpVector() * GetVelocity();
@@ -285,7 +322,7 @@ void AMainCharacter::ApplyLocationHandSway(FRotator& TargetRotation)
 		TotalRightVelocity * LocationHandSwayMultiplier * .33f); 
 }
 
-void AMainCharacter::ApplyHandSwayRotation(FRotator& TargetRotation, float Pitch, float Yaw)
+void AMainCharacter::ApplyHandSwayRotation(FRotator& TargetRotation, float Pitch, float Yaw) const
 {
 	TargetRotation.Pitch = FMath::Clamp(
 		TargetRotation.Pitch + Pitch * HandSwayMultiplier.Pitch,
