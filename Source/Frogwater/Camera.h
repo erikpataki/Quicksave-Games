@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Interactable.h"
 #include "Item.h"
-#include "Components/CapsuleComponent.h"
+#include "PrimaryAssetActor.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include "GameFramework/Actor.h"
 #include "Camera.generated.h"
@@ -13,7 +13,7 @@
 class UHermesInteractableComponent;
 class UScannableComponent;
 UCLASS()
-class FROGWATER_API ACamera : public AActor, public IInteractable, public IItem
+class FROGWATER_API ACamera : public APrimaryAssetActor, public IInteractable, public IItem
 {
 	GENERATED_BODY()
 	

@@ -63,6 +63,9 @@ public:
 	void AddQuest(const UQuestDataAsset* Quest);
 
 	UFUNCTION(BlueprintCallable, Category=Quest)
+	void AddQuestById(FName QuestId);
+
+	UFUNCTION(BlueprintCallable, Category=Quest)
 	bool AddProgressToQuestById(FName QuestId, float ScoreToAdd);
 
 	UFUNCTION(BlueprintCallable, Category=Quest)

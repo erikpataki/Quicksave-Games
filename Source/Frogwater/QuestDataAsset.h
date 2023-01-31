@@ -3,14 +3,14 @@
 #include "QuestDataAsset.generated.h"
 
 UCLASS(BlueprintType, Blueprintable)
-class FROGWATER_API UQuestDataAsset : public UDataAsset
+class FROGWATER_API UQuestDataAsset : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 
 public:
 	UPROPERTY(EditAnywhere, Category=Quest)
 	FName QuestId = TEXT("quest_");
-
+	
 	UPROPERTY(EditAnywhere, Category=Quest)
 	FString QuestName = TEXT("Hello");
 
@@ -28,4 +28,11 @@ public:
 	
 	UPROPERTY(EditAnywhere, Category=Quest)
 	class UQuestDataAsset* QuestToGiveUponCompletion;
+
+	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 };
+
+inline FPrimaryAssetId UQuestDataAsset::GetPrimaryAssetId() const
+{
+	return FPrimaryAssetId("Quest", QuestId);
+}

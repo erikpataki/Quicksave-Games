@@ -135,6 +135,23 @@ void UQuestSubsystem::AddQuest(const UQuestDataAsset* Quest)
 	OnQuestAdded.Broadcast(QuestData);
 }
 
+void UQuestSubsystem::AddQuestById(FName QuestId)
+{
+	if (const auto AssetManager = UAssetManager::GetIfValid())
+	{
+		auto QuestPrimaryId = FPrimaryAssetId("Quest", FName(QuestId));
+		AssetManager->LoadPrimaryAsset(QuestPrimaryId, TArray<FName>(), FStreamableDelegate::CreateLambda([this, QuestPrimaryId]()
+		{
+			if (const auto AssetManager = UAssetManager::GetIfValid())
+			{
+				auto Quest = AssetManager->GetPrimaryAssetObject<UQuestDataAsset>(QuestPrimaryId);
+				if (Quest)
+					AddQuest(Quest);
+			}
+		}));
+	}
+}
+
 bool UQuestSubsystem::AddProgressToQuestById(FName QuestId, float ScoreToAdd)
 {
 	if (const auto QuestPtr = GetQuestByPtr(QuestId))
