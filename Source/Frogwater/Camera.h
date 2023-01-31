@@ -98,7 +98,12 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Camera", AdvancedDisplay, meta=(ClampMin=0.5f, ClampMax=100.f))
 	float ZoomSpeed = 10.f;
 
+	UPROPERTY(EditAnywhere, Category="Camera", meta=(ClampMin=0, ClampMax=2.f, FixedIncrement=.01f))
+	float ShutterSpeed = .25f;
+
 	float TargetFov = NormalZoomFov;
+
+	FTimerHandle ShutterTimer;
 
 public:
 	UFUNCTION(BlueprintCallable, Category="Camera")
@@ -134,6 +139,9 @@ public:
 	UFUNCTION(BlueprintPure, Category="Camera")
 	float ZoomMagnificationToFov(float Power) const { return NormalZoomFov / Power; }
 
+	UFUNCTION(BlueprintPure, Category="Camera")
+	float GetShutterSpeed() const { return ShutterSpeed; }
+
 protected:
 	void Trace();
 
@@ -154,9 +162,12 @@ protected:
 	void RemoveNotVisibleScannables(TArray<FHitResult>& HitResults, const TArray<FHitResult>& VisibleHitResults) const;
 
 	void MarkScannableComponent(UScannableComponent* ScannableComponent);
+	
+	UFUNCTION(BlueprintNativeEvent, Category="Camera")
+	void OnBeginPictureTaken(UScannableComponent* ScannableComponent);
 
 	UFUNCTION(BlueprintNativeEvent, Category="Camera")
-	void OnPictureTaken(bool bSuccess, UScannableComponent* ScannableComponent);
+	void OnAfterPictureTaken(bool bSuccess, UScannableComponent* ScannableComponent);
 
 	void StartTraceTimer();
 	void StopTraceTimer();
