@@ -13,5 +13,7 @@ UCLASS()
 class FROGWATER_API AFrogwaterPlayerController : public APlayerController
 {
 	GENERATED_BODY()
-	
+
+public:
+	AFrogwaterPlayerController(const FObjectInitializer& ObjectInitializer);
 };

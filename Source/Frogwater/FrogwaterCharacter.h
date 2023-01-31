@@ -82,6 +82,9 @@ protected:
 	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
 	 */
 	void LookUpAtRate(float Rate);
+
+	void StartCrouch() { Crouch(); }
+	void StopCrouch() { UnCrouch(); }
 	
 protected:
 	// APawn interface

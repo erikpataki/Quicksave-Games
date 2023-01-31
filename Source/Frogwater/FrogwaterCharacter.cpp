@@ -23,6 +23,7 @@ AFrogwaterCharacter::AFrogwaterCharacter()
 
 	// set our turn rates for input
 	TurnRateGamepad = 45.f;
+	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
 
 	// Create a CameraComponent	
 	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
@@ -59,6 +60,10 @@ void AFrogwaterCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 	// Bind jump events
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+
+	// Bind crouch events
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AFrogwaterCharacter::StartCrouch);
+	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AFrogwaterCharacter::StopCrouch);
 
 	// Bind fire event
 	PlayerInputComponent->BindAction("PrimaryAction", IE_Pressed, this, &AFrogwaterCharacter::OnPrimaryAction);

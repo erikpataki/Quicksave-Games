@@ -3,3 +3,9 @@
 
 #include "FrogwaterPlayerController.h"
 
+#include "FWCheatManager.h"
+
+AFrogwaterPlayerController::AFrogwaterPlayerController(const FObjectInitializer& ObjectInitializer)
+{
+	CheatClass = UFWCheatManager::StaticClass();
+}
