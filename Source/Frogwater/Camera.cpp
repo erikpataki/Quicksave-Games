@@ -110,15 +110,20 @@ void ACamera::TakePicture()
 	// Do a new trace that is most updated.
 	Trace();
 
-	if (IsValid(FocusedScannable))
-	{
-		const bool bSuccess = FocusedScannable->ExecPictureTaken(this);
-		OnPictureTaken(bSuccess, FocusedScannable);
-		
-		return;
-	}
+	OnBeginPictureTaken(FocusedScannable);
 
-	OnPictureTaken(false, nullptr);
+	GetWorldTimerManager().SetTimer(ShutterTimer, [this]()
+	{
+		if (IsValid(FocusedScannable))
+		{
+			const bool bSuccess = FocusedScannable->ExecPictureTaken(this);
+			OnAfterPictureTaken(bSuccess, FocusedScannable);
+		
+			return;
+		}
+
+		OnAfterPictureTaken(false, nullptr);
+	}, ShutterSpeed, false);
 }
 
 void ACamera::SetOwningPawn(APawn* InOwningPawn)
@@ -290,6 +295,11 @@ void ACamera::MarkScannableComponent(UScannableComponent* ScannableComponent)
 		FocusedScannable->ExecIsFocus(this);
 }
 
+void ACamera::OnBeginPictureTaken_Implementation(UScannableComponent* ScannableComponent)
+{
+	
+}
+
 void ACamera::SaveLastCaptureAsFile(FString FileNameWithoutExtension)
 {
 	UKismetRenderingLibrary::ExportRenderTarget(
@@ -337,6 +347,6 @@ void ACamera::OnZoomPowerChanged_Implementation(bool bZoomIn)
 {
 }
 
-void ACamera::OnPictureTaken_Implementation(bool bSuccess, UScannableComponent* ScannableComponent)
+void ACamera::OnAfterPictureTaken_Implementation(bool bSuccess, UScannableComponent* ScannableComponent)
 {
 }
