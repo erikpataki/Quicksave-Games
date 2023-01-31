@@ -141,7 +141,7 @@ void AMainCharacter::OnPrimaryActionReleased()
 {
 	OnPrimaryActionStop.Broadcast();
 
-	if (GetHandItemState() == EItemState::Aimed)
+	if (GetHandItemState() == EItemState::Aimed || GetHandItemState() == EItemState::Offhand)
 	{
 		if (const auto CurrentHandItem = InventoryComponent->GetCurrentHandItem(); IsValid(CurrentHandItem))
 		{
