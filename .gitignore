@@ -84,3 +84,6 @@ Pictures/*
 Plugins/Developer/RiderLink
 
 Plugins/ProjectAcoustics/AcousticsData
+
+# Don't ignore Project Acoustics third party binaries
+!Plugins/ProjectAcousticsNative/Source/ThirdParty/**
