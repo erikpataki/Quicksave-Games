@@ -54,10 +54,6 @@
 			]
 		},
 		{
-			"Name": "ResonanceAudio",
-			"Enabled": false
-		},
-		{
 			"Name": "TextToSpeech",
 			"Enabled": true
 		},
@@ -71,6 +67,10 @@
 		},
 		{
 			"Name": "DolbyAtmos",
+			"Enabled": false
+		},
+		{
+			"Name": "ResonanceAudio",
 			"Enabled": false
 		}
 	]
